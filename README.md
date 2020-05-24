@@ -1,37 +1,95 @@
-## Welcome to GitHub Pages
-
-You can use the [editor on GitHub](https://github.com/mnccc/test/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
-
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
-
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/mnccc/test/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Create a hover effect</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+<script src="https://api.mapbox.com/mapbox-gl-js/v1.10.1/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v1.10.1/mapbox-gl.css" rel="stylesheet" />
+<style>
+	body { margin: 0; padding: 0; }
+	#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+	mapboxgl.accessToken = 'pk.eyJ1IjoibWFwc2J5bW9uIiwiYSI6ImNrNmoyMXE0MjA2MnQzZXQwZTZjbXB2OGcifQ.8xFr7oUTNOPpvFYXHgCJTA';
+var map = new mapboxgl.Map({
+container: 'map',
+style: 'mapbox://styles/mapbox/streets-v11',
+center: [-100.486052, 37.830348],
+zoom: 2
+});
+var hoveredStateId = null;
+ 
+map.on('load', function() {
+map.addSource('states', {
+'type': 'geojson',
+'data':
+'https://docs.mapbox.com/mapbox-gl-js/assets/us_states.geojson'
+});
+ 
+// The feature-state dependent fill-opacity expression will render the hover effect
+// when a feature's hover state is set to true.
+map.addLayer({
+'id': 'state-fills',
+'type': 'fill',
+'source': 'states',
+'layout': {},
+'paint': {
+'fill-color': '#627BC1',
+'fill-opacity': [
+'case',
+['boolean', ['feature-state', 'hover'], false],
+1,
+0.5
+]
+}
+});
+ 
+map.addLayer({
+'id': 'state-borders',
+'type': 'line',
+'source': 'states',
+'layout': {},
+'paint': {
+'line-color': '#627BC1',
+'line-width': 2
+}
+});
+ 
+// When the user moves their mouse over the state-fill layer, we'll update the
+// feature state for the feature under the mouse.
+map.on('mousemove', 'state-fills', function(e) {
+if (e.features.length > 0) {
+if (hoveredStateId) {
+map.setFeatureState(
+{ source: 'states', id: hoveredStateId },
+{ hover: false }
+);
+}
+hoveredStateId = e.features[0].id;
+map.setFeatureState(
+{ source: 'states', id: hoveredStateId },
+{ hover: true }
+);
+}
+});
+ 
+// When the mouse leaves the state-fill layer, update the feature state of the
+// previously hovered feature.
+map.on('mouseleave', 'state-fills', function() {
+if (hoveredStateId) {
+map.setFeatureState(
+{ source: 'states', id: hoveredStateId },
+{ hover: false }
+);
+}
+hoveredStateId = null;
+});
+});
+</script>
+ 
+</body>
+</html>
